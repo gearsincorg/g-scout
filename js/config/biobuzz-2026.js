@@ -25,7 +25,6 @@ export default {
       fields: [
         { id: 'ao', type: 'counter', label: 'Pollen in Hive' },   // into the CELL; misses aren't recorded
         { id: 'an', type: 'counter', label: 'Nectar in Hive' },
-        { id: 'at', type: 'counter', label: 'HIVE TIPS' },
         { id: 'al', type: 'toggle', label: 'LEAVE' },
         { id: 'ap', type: 'toggle', label: 'AUTO PARK', pair: true },
       ],
@@ -35,7 +34,6 @@ export default {
       fields: [
         { id: 'to', type: 'counter', label: 'Pollen in Hive' },   // into the CELL; misses aren't recorded
         { id: 'tn', type: 'counter', label: 'Nectar in Hive' },
-        { id: 'tt', type: 'counter', label: 'HIVE TIPS' },
       ],
     },
     {
@@ -71,12 +69,10 @@ export default {
   metrics: [
     { id: 'apo', group: 'auto', label: 'Pol', full: 'Pollen', agg: 'avg', fn: d => d.ao || 0 },
     { id: 'ane', group: 'auto', label: 'Nec', full: 'Nectar', agg: 'avg', fn: d => d.an || 0 },
-    { id: 'ati', group: 'auto', label: 'Tips', agg: 'avg', fn: d => d.at || 0 },
     { id: 'alv', group: 'auto', label: 'Leave', agg: 'pct', fn: d => !!d.al },
     { id: 'apk', group: 'auto', label: 'Park', agg: 'pct', fn: d => !!d.ap },
     { id: 'tpo', group: 'teleop', label: 'Pol', full: 'Pollen', agg: 'avg', fn: d => d.to || 0 },
     { id: 'tne', group: 'teleop', label: 'Nec', full: 'Nectar', agg: 'avg', fn: d => d.tn || 0 },
-    { id: 'tti', group: 'teleop', label: 'Tips', agg: 'avg', fn: d => d.tt || 0 },
     { id: 'epo', group: 'end', label: 'Pol', full: 'Pollen', agg: 'avg', fn: d => d.eo || 0 },
     { id: 'ene', group: 'end', label: 'Nec', full: 'Nectar', agg: 'avg', fn: d => d.ec || 0 },
     { id: 'epk', group: 'end', label: 'Park', agg: 'pct', fn: d => !!d.ep },
