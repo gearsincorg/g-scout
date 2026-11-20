@@ -6,6 +6,7 @@ import { asciiJSON, makeFrames, showFrames, scanPanel, qrSize } from './qr.js';
 import { SLOTS, SLOT_NAMES, compact, expand, sameMatches, parseTyped, toTyped, fetchFTCScout, fromFtcEventsJson } from './schedule.js';
 import { config, fields, summarize, fmtMetric, matchOrder, toCSV } from './records.js';
 import { resetDevice } from './reset.js';
+import { zoneGrid, zoneCounts, zoneText } from './zones.js';
 
 let root, body, tab, records = [], sched = {}, teams = {}, meta, scanLog = [], activePanel;
 let sortBy = config.defaultSort, sortDir = -1, search = '';
@@ -124,7 +125,7 @@ function recordSheet(rs) {
       h('tr', {}, h('th', {}, f.label), h('td', {}, fieldText(f, r.d[f.id])))))))));
 }
 
-const fieldText = (f, v) => f.type === 'choice' ? (f.options[v - 1] ?? '') : f.type === 'toggle' ? (v ? 'yes' : 'no') : (v ?? '');
+const fieldText = (f, v) => f.type === 'zones' ? zoneText(f, v) : f.type === 'choice' ? (f.options[v - 1] ?? '') : f.type === 'toggle' ? (v ? 'yes' : 'no') : (v ?? '');
 
 // ---- teams / rankings ---------------------------------------------------------
 // Metric columns come in runs of the same `group` (AUTO, TELEOP, ...); the table gets a
@@ -176,6 +177,7 @@ function teamSheet(r) {
     groupRuns().map(g => h('div', { class: `stat-group g-${g.g}` }, h('div', { class: 'stat-title' }, config.groups[g.g] || ''),
       h('div', { class: 'stats' }, config.metrics.filter(m => m.group === g.g).map(m =>
         h('div', { class: 'stat' }, h('div', { class: 'stat-v' }, fmtMetric(m, r.m[m.id])), h('div', { class: 'muted' }, m.full || m.label)))))),
+    heatMaps(r),
     h('div', { class: 'scroll-x' }, h('table', { class: 'rank small grouped' },
       h('thead', {}, groupRow(1), h('tr', {}, h('th', { class: 'stick' }, 'Match'), config.metrics.map(m => h('th', { class: gClass(m) }, m.label)))),
       h('tbody', {}, r.records.map(x => h('tr', {}, h('td', { class: 'stick' }, x.m),
@@ -183,6 +185,21 @@ function teamSheet(r) {
     h('p', { class: 'muted small' }, metricKey().replace('Per-match averages unless marked %', 'Top: per-match averages unless marked %; table: ✓ = yes')),
     h('h3', {}, 'Notes'),
     h('div', { class: 'list notes-list' }, r.records.filter(x => x.d.nt).map(x => h('div', { class: 'list-row' }, h('b', {}, x.m + ' '), x.d.nt)))), { wide: true });
+}
+
+// Field maps (`zones` fields) summed over the team's matches, one block per form region.
+function heatMaps(r) {
+  const tintOf = f => config.sections.find(s => s.id === f.section)?.tint || 'perf';
+  const zf = fields.filter(f => f.type === 'zones');
+  return [...new Set(zf.map(tintOf))].map(t => h('div', { class: `stat-group g-${t}` },
+    h('div', { class: 'stat-title' }, `${config.groups[t] || ''} FIELD MAPS`),
+    h('div', { class: 'zone-maps' }, zf.filter(f => tintOf(f) === t).map(f => {
+      const vals = r.records.map(x => (x.d || {})[f.id]);
+      const n = zoneCounts(f, vals);
+      const taps = n.reduce((a, b) => a + b, 0);
+      return h('div', { class: 'zone-panel' }, h('b', {}, f.label), zoneGrid(f, n),
+        h('div', { class: 'muted small center' }, `${taps} tap${taps === 1 ? '' : 's'} in ${vals.filter(Boolean).length} of ${r.n} matches`));
+    }))));
 }
 
 // ---- schedule -------------------------------------------------------------------

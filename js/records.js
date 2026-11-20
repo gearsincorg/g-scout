@@ -6,6 +6,7 @@
 // and the hub keeps whichever copy has the newer `u`.
 
 import config from './config/biobuzz-2026.js';
+import { zoneText } from './zones.js';
 export { config };
 
 export const fields = config.sections.flatMap(s => s.fields.map(f => ({ ...f, section: s.id })));
@@ -70,7 +71,7 @@ export function toCSV(records) {
   const rows = records.slice().sort((a, b) => matchOrder(a.m) - matchOrder(b.m)).map(r => {
     const d = r.d || {};
     return [r.ev, r.m, r.s, r.t, r.sc, new Date(r.u).toISOString(),
-      ...fields.map(f => f.type === 'choice' ? (f.options[d[f.id] - 1] ?? '') : (d[f.id] ?? 0)),
+      ...fields.map(f => f.type === 'choice' ? (f.options[d[f.id] - 1] ?? '') : f.type === 'zones' ? zoneText(f, d[f.id]) : (d[f.id] ?? 0)),
       ...config.metrics.map(m => { const v = m.fn(d); return typeof v === 'boolean' ? +v : v; })].map(esc).join(',');
   });
   return [cols.join(','), ...rows].join('\n');
