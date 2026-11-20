@@ -9,6 +9,7 @@
 //   choice   one of `options`     (stored as 1..n, 0 = not set; no default)
 //   rating   1..max               (0 = not rated)
 //   text     free notes
+//   zones    taps on a map of the field's tiles (see js/zones.js); `max: 1` = one tile only
 // A section with `tint` (auto | teleop | end | perf) is drawn as a coloured region, its title in the
 // region's border colour. Without it, the section is a plain card with its title.
 // `pair: true` puts a toggle on the same row as the toggle before it (the row's toggles share it equally).
@@ -23,10 +24,12 @@ export default {
     {
       id: 'auto', title: 'AUTO', tint: 'auto',
       fields: [
+        { id: 'al', type: 'toggle', label: 'LEAVE' },
+        { id: 'as', type: 'zones', label: 'Start position', hint: 'Tap the tile the robot starts on', max: 1 },
         { id: 'ao', type: 'counter', label: 'Pollen in Hive' },   // into the CELL; misses aren't recorded
         { id: 'an', type: 'counter', label: 'Nectar in Hive' },
-        { id: 'al', type: 'toggle', label: 'LEAVE' },
-        { id: 'ap', type: 'toggle', label: 'AUTO PARK', pair: true },
+        { id: 'az', type: 'zones', label: 'Scored from', hint: 'Tap where the robot is each time it scores', max: 30 },
+        { id: 'ap', type: 'toggle', label: 'AUTO PARK' },
       ],
     },
     {
@@ -41,7 +44,7 @@ export default {
       fields: [
         { id: 'eo', type: 'counter', label: 'Pollen in Flower' },
         { id: 'ec', type: 'counter', label: 'Nectar in Flower' },
-        { id: 'ep', type: 'toggle', label: 'TELEOP PARK' },
+        { id: 'ep', type: 'toggle', label: 'ENDGAME PARK' },
       ],
     },
     {
@@ -50,7 +53,7 @@ export default {
         { id: 'pc', type: 'choice', label: 'Pollen Collecting', options: ['Slow', 'Avg.', 'Fast'] },
         { id: 'nc', type: 'choice', label: 'Nectar Collecting', options: ['Slow', 'Avg.', 'Fast'] },
         { id: 'df', type: 'choice', label: 'Defense played', options: ['Light', 'Heavy'] }, // 1 = Light (was Some), 2 = Heavy (old records' 0 = None reads as not set)
-        { id: 'dr', type: 'rating', label: 'Driver skill', max: 5 },
+        { id: 'dr', type: 'choice', label: 'Driver skill', options: ['Poor', 'OK', 'Great'] },
         { id: 'st', type: 'choice', label: 'Robot', options: ['MIA', 'Broke', 'Tip'] },
         { id: 'fn', type: 'counter', label: 'MINOR FOULS' },
         { id: 'fj', type: 'counter', label: 'MAJOR FOULS' },
@@ -67,9 +70,9 @@ export default {
   // `label` heads the table columns; the team sheet's tiles use `full` when given.
   // `one(d)`, if given, is what the team sheet's match-by-match table shows instead of fn(d).
   metrics: [
+    { id: 'alv', group: 'auto', label: 'Leave', agg: 'pct', fn: d => !!d.al },
     { id: 'apo', group: 'auto', label: 'Pol', full: 'Pollen', agg: 'avg', fn: d => d.ao || 0 },
     { id: 'ane', group: 'auto', label: 'Nec', full: 'Nectar', agg: 'avg', fn: d => d.an || 0 },
-    { id: 'alv', group: 'auto', label: 'Leave', agg: 'pct', fn: d => !!d.al },
     { id: 'apk', group: 'auto', label: 'Park', agg: 'pct', fn: d => !!d.ap },
     { id: 'tpo', group: 'teleop', label: 'Pol', full: 'Pollen', agg: 'avg', fn: d => d.to || 0 },
     { id: 'tne', group: 'teleop', label: 'Nec', full: 'Nectar', agg: 'avg', fn: d => d.tn || 0 },
@@ -80,7 +83,7 @@ export default {
     { id: 'ncs', group: 'perf', label: 'Nec spd', full: 'Nectar spd', agg: 'avg', fn: d => d.nc || null },
     { id: 'def', group: 'perf', label: 'Def', full: 'Defense', agg: 'pct', fn: d => [0, 0.5, 1][d.df || 0], one: d => ['', 'L', 'H'][d.df || 0],
       key: 'Def: Heavy counts a full match, Light half' },
-    { id: 'drv', group: 'perf', label: 'Driver', agg: 'avg', fn: d => d.dr || null },
+    { id: 'drv', group: 'perf', label: 'Driver', agg: 'avg', fn: d => d.dr || null, key: 'Driver: 1 Poor, 2 OK, 3 Great' },
     { id: 'mia', group: 'perf', label: 'MIA', agg: 'sum', fn: d => d.st === 1, key: 'MIA, Broke, Tip: number of matches' },
     { id: 'brk', group: 'perf', label: 'Broke', agg: 'sum', fn: d => d.st === 2 },
     { id: 'tip', group: 'perf', label: 'Tip', agg: 'sum', fn: d => d.st === 3 },
