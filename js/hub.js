@@ -187,19 +187,24 @@ function teamSheet(r) {
     h('div', { class: 'list notes-list' }, r.records.filter(x => x.d.nt).map(x => h('div', { class: 'list-row' }, h('b', {}, x.m + ' '), x.d.nt)))), { wide: true });
 }
 
-// Field maps (`zones` fields) summed over the team's matches, one block per form region.
+// Heat maps from `zones` fields, added up over the team's matches (config.heatmaps;
+// without it, one map per zones field).
 function heatMaps(r) {
+  const byId = Object.fromEntries(fields.map(f => [f.id, f]));
   const tintOf = f => config.sections.find(s => s.id === f.section)?.tint || 'perf';
-  const zf = fields.filter(f => f.type === 'zones');
-  return [...new Set(zf.map(tintOf))].map(t => h('div', { class: `stat-group g-${t}` },
-    h('div', { class: 'stat-title' }, `${config.groups[t] || ''} FIELD MAPS`),
-    h('div', { class: 'zone-maps' }, zf.filter(f => tintOf(f) === t).map(f => {
-      const vals = r.records.map(x => (x.d || {})[f.id]);
-      const n = zoneCounts(f, vals);
+  const maps = config.heatmaps || fields.filter(f => f.type === 'zones').map(f => ({ label: f.label, group: tintOf(f), fields: [f.id], unit: 'tap' }));
+  if (!maps.length) return null;
+  return h('div', { class: 'stat-group g-perf' }, h('div', { class: 'stat-title' }, 'FIELD MAPS'),
+    h('div', { class: 'zone-maps' }, maps.map(m => {
+      const fs = m.fields.map(id => byId[id]).filter(Boolean);
+      if (!fs.length) return null;
+      const vals = r.records.flatMap(x => fs.map(f => (x.d || {})[f.id]));
+      const n = zoneCounts(fs[0], vals);
       const taps = n.reduce((a, b) => a + b, 0);
-      return h('div', { class: 'zone-panel' }, h('b', {}, f.label), zoneGrid(f, n),
-        h('div', { class: 'muted small center' }, `${taps} tap${taps === 1 ? '' : 's'} in ${vals.filter(Boolean).length} of ${r.n} matches`));
-    }))));
+      const used = r.records.filter(x => fs.some(f => (x.d || {})[f.id])).length;
+      return h('div', { class: `zone-panel g-${m.group}` + (m.lead ? ' lead' : '') }, h('b', {}, m.label), zoneGrid(fs[0], n),
+        h('div', { class: 'muted small center' }, `${taps} ${m.unit || 'tap'}${taps === 1 ? '' : 's'} in ${used} of ${r.n} matches`));
+    })));
 }
 
 // ---- schedule -------------------------------------------------------------------
