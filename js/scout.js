@@ -161,7 +161,7 @@ function fieldEl(f, d, changed) {
       } }, o));
     return h('div', { class: 'field' }, lab, h('div', { class: 'seg fill' }, btns));
   }
-  if (f.type === 'zones') return zoneField(f, d, changed, st.slot[0] === 'R' ? 'red' : 'blue');
+  if (f.type === 'zones') return zoneField(f, d, changed);
   if (f.type === 'text') {
     return h('div', { class: 'field col' }, lab, h('textarea', { maxlength: f.max || 200, rows: 3,
       oninput: e => { d[f.id] = e.target.value; changed(); } }, d[f.id] || ''));
