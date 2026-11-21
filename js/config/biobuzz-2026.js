@@ -29,7 +29,6 @@ export default {
         { id: 'as', type: 'zones', label: 'Start position', hint: 'Tap the wall tile the robot starts on', max: 1, edge: true },
         { id: 'ao', type: 'counter', label: 'Pollen in Hive' },   // into the CELL; misses aren't recorded
         { id: 'an', type: 'counter', label: 'Nectar in Hive' },
-        { id: 'az', type: 'zones', label: 'Shooting position', hint: 'Tap where the robot is each time a shot scores', max: 30 },
         { id: 'ap', type: 'toggle', label: 'AUTO PARK' },
       ],
     },
@@ -38,7 +37,6 @@ export default {
       fields: [
         { id: 'to', type: 'counter', label: 'Pollen in Hive' },   // into the CELL; misses aren't recorded
         { id: 'tn', type: 'counter', label: 'Nectar in Hive' },
-        { id: 'tz', type: 'zones', label: 'Shooting position', hint: 'Tap where the robot is each time a shot scores', max: 60 },
       ],
     },
     {
@@ -95,10 +93,7 @@ export default {
   // Heat maps on the team sheet: each adds up the taps of its `zones` fields over all the
   // team's matches. `group` colours it like the form's regions; `unit` names one tap.
   heatmaps: [
-    { label: 'Favored shooting positions', group: 'perf', fields: ['az', 'tz'], unit: 'scored shot', lead: true },
     { label: 'Start position', group: 'auto', fields: ['as'], unit: 'start' },
-    { label: 'AUTO shooting', group: 'auto', fields: ['az'], unit: 'scored shot' },
-    { label: 'TELEOP shooting', group: 'teleop', fields: ['tz'], unit: 'scored shot' },
   ],
   groups: { auto: 'AUTO', teleop: 'TELEOP', end: 'ENDGAME', perf: 'PERFORMANCE' },
   defaultSort: 'tpo',
