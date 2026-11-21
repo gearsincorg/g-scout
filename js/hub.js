@@ -194,7 +194,8 @@ function heatMaps(r) {
   const tintOf = f => config.sections.find(s => s.id === f.section)?.tint || 'perf';
   const maps = config.heatmaps || fields.filter(f => f.type === 'zones').map(f => ({ label: f.label, group: tintOf(f), fields: [f.id], unit: 'tap' }));
   if (!maps.length) return null;
-  return h('div', { class: 'stat-group g-perf' }, h('div', { class: 'stat-title' }, 'FIELD MAPS'),
+  const g = maps.every(m => m.group === maps[0].group) ? maps[0].group : 'perf';
+  return h('div', { class: `stat-group g-${g}` }, h('div', { class: 'stat-title' }, 'FIELD MAPS'),
     h('div', { class: 'zone-maps' }, maps.map(m => {
       const fs = m.fields.map(id => byId[id]).filter(Boolean);
       if (!fs.length) return null;
